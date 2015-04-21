@@ -2,13 +2,17 @@
 # From http://stackoverflow.com/questions/2687173/django-how-can-i-get-a-block-from-a-template
 from django.template import Context
 from django.template.loader_tags import BlockNode, ExtendsNode
+try:
+    xrange
+except NameError:  # Python 3
+    xrange = range
 
 
 class BlockNotFound(Exception):
     pass
 
 
-def _iter_nodes(template, context, name, block_lookups):
+def _get_node(template, context=Context(), name='subject', block_lookups={}):
     for node in template:
         if isinstance(node, BlockNode) and node.name == name:
             # Rudimentary handling of extended templates, for issue #3
@@ -21,13 +25,4 @@ def _iter_nodes(template, context, name, block_lookups):
             lookups = dict([(n.name, n) for n in node.nodelist if isinstance(n, BlockNode)])
             lookups.update(block_lookups)
             return _get_node(node.get_parent(context), context, name, lookups)
-
     raise BlockNotFound("Node '%s' could not be found in template." % name)
-
-
-def _get_node(template, context=Context(), name='subject', block_lookups={}):
-    try:
-        return _iter_nodes(template, context, name, block_lookups)
-    except TypeError:
-        context.template = template.template
-        return _iter_nodes(template.template, context, name, block_lookups)

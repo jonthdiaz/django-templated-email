@@ -1,16 +1,11 @@
 from django.conf import settings
+from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from templated_email.backends.vanilla_django import TemplateBackend
-
-import warnings
-warnings.filterwarnings('error', 'django.utils.importlib')
-
 try:
-    # Django <= 1.7
-    from django.utils.importlib import import_module
-except:
-    # Django >= 1.8
-    from importlib import import_module
+    basestring
+except NameError:  # Python 3
+    basestring = str
 
 
 def get_connection(backend=None, template_prefix=None, template_suffix=None,
